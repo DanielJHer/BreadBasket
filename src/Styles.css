@@ -7,14 +7,16 @@
   body {
     font-family: 'Roboto', sans-serif;
     color: #fff;
-    background-color: #121212;
+    background-color: #ede9e9;
+    height: 100%;
   }
   
   .container {
-    max-width: 1200px;
-    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+
   }
-  
 
   .header {
     margin-top: 50px;
@@ -32,7 +34,7 @@
     justify-content: center;
   }
   
-  .product {
+  .product-card {
     background-color: #272727;
     border-radius: 8px;
     overflow: hidden;
@@ -40,11 +42,11 @@
     box-shadow: 0 10px 10px 0 rgba(0, 0, 0, .5);
   }
   
-  .product:hover {
+  .product-card:hover {
     transform: scale(1.03);
   }
   
-  .product img {
+  .product-card img {
     width: 250px;
     height: auto;
     display: block;

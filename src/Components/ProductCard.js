@@ -1,17 +1,17 @@
 import React from "react";
 
-export default function ProductCard({product, quantity, handleQuantityChange}){
+export default function ProductCard({product}){
 
     return (
         <div className="product-card">
-            <img src={product.image} alt={product.name}/>
+            <img src={`${product.image}`} alt={product.name}/>
             <h2>{product.name}</h2>
-            <p>{product.description}</p>
+            <p className="product-info">{product.description}</p>
             <input
              type="number"
-             value={quantity}
+             value="0"
              min="0"
-             onChange={(e) => handleQuantityChange(e.target.value)}
+             onChange={(e) => console.log(e.target.value)}
              />
         </div>
     )

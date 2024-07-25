@@ -1,0 +1,50 @@
+[
+    {
+      "id": 1,
+      "name": "Sesame Gochujang",
+      "description": "Our hearty Gochujang loaf is made with a handsome amount of garlic confit, onion puree, green onions, and gochujang. All topped with Organic Sesame Seeds.",
+      "image": "/images/sesamegochuchang.webp"
+    },
+    {
+      "id": 2,
+      "name": "Focaccia",
+      "description": "Our focaccia is cultured with poolish and it contains Bread Flour, Spelt, Hard Red Flour, Hard White Flour, Olive Oil, topped with Maldon Salt.",
+      "image": "/images/focaccia.webp"
+    },
+    {
+      "id": 3,
+      "name": "Black Sesame",
+      "description": "A hearty Loaf made with Hard Red flour action packed with Organic Black Sesame Seeds inside and out.",
+      "image": "/images/blacksesame.webp"
+    },
+    {
+      "id": 4,
+      "name": "Country Sourdough",
+      "description": "A classic organic Country Loaf made with Bread flour, Hard Red Spring and Rye.",
+      "image": "/images/sourdough.webp"
+    },
+    {
+      "id": 5,
+      "name": "Rosemary Polenta Porridge",
+      "description": "Cooked down Porridge with toasted Organic Cornmeal, and Rosemary added to our Country Loaf gives it a creamy texture yet popcornlike aroma.",
+      "image": "/images/rosemarypolenta.webp"
+    },
+    {
+      "id": 6,
+      "name": "Rustic Baguette",
+      "description": "Our rustic baguettes are leavened with spelt poolish and sourdough culture for a more complex finish.",
+      "image": "/images/bagette.webp"
+    },
+    {
+      "id": 7,
+      "name": "Ciabatta Grande",
+      "description": "Our light and crisp Ciabatta Grande is made with a blend of Bread Flour, Spelt Flour, and Hard Red Flour ",
+      "image": "/images/ciabatta.webp"
+    },
+    {
+      "id": 8,
+      "name": "Fougasse",
+      "description": "A fun pretzel like bread to tear apart and eat. Made with a blend of Bread Flour, Spelt Flour, and Hard Red Flour topped with Olive Oil, Maldon Sea Salt.",
+      "image": "/images/fougasse.webp"
+    }
+  ]
