@@ -6,7 +6,7 @@ export default function Footer(){
     return(
 
         <div className="footer">
-            <p>{currentYear} ℗ BreadBasket, All Rights Reserved</p>
+            <p>{currentYear} © Powered by BreadBasket, All Rights Reserved</p>
         </div>
     )
 }

@@ -25,7 +25,7 @@
     },
     {
       "id": 5,
-      "name": "Rosemary Polenta Porridge",
+      "name": "Rosemary Polenta",
       "description": "Cooked down Porridge with toasted Organic Cornmeal, and Rosemary added to our Country Loaf gives it a creamy texture yet popcornlike aroma.",
       "image": "/images/rosemarypolenta.webp"
     },
@@ -39,7 +39,7 @@
       "id": 7,
       "name": "Ciabatta Grande",
       "description": "Our light and crisp Ciabatta Grande is made with a blend of Bread Flour, Spelt Flour, and Hard Red Flour ",
-      "image": "/images/ciabatta.webp"
+      "image": "/images/ciabatta.png"
     },
     {
       "id": 8,
