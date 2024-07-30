@@ -8,7 +8,6 @@ export default function OrderForm() {
   const [resetSignal, setResetSignal] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [completeOrder, setCompleteOrder] = useState([]);
-  const [orderTimestamp, setOrderTimestamp] = useState('');
   const [currentTimestamp, setCurrentTimestamp] = useState('');
   const [futureTimestamp, setFutureTimestamp] = useState('');
 
@@ -76,7 +75,7 @@ export default function OrderForm() {
 
   // handle confirm order
   const handleConfirm = () => {
-    console.log('Order confirmed:', completeOrder, 'at', orderTimestamp);
+    console.log('Order confirmed:', completeOrder, 'at', currentTimestamp);
     setOrder({}); // clears order state
     setResetSignal(!resetSignal); // toggles reset
     setShowConfirmation(false); // Close the confirmation dialog
@@ -126,7 +125,8 @@ export default function OrderForm() {
             <ul>
               {completeOrder.map((item) => (
                 <li key={item.id}>
-                  <span>{item.name}</span>: <span>{item.quantity}</span>
+                  <span className="name">{item.name}:</span>
+                  <span className="quantity">{item.quantity}</span>
                 </li>
               ))}
             </ul>

@@ -200,3 +200,13 @@ nav a:hover,
 .confirmation-dialog button {
   margin-right: 10px; /* Space between buttons */
 }
+
+.confirmation-dialog ul li span.name {
+  display: block;
+  font-weight: bold;
+}
+
+.confirmation-dialog ul li span.quantity {
+  display: block;
+  margin-left: 10px; /* Optional spacing */
+}
