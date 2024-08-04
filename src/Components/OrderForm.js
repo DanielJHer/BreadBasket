@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import ProductCard from './ProductCard';
+import DatePicker from './DatePicker';
 
 export default function OrderForm() {
   // use state
   const [products, setProducts] = useState([]);
-  const [order, setOrder] = useState([]);
+  const [order, setOrder] = useState({});
   const [resetSignal, setResetSignal] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
-  const [completeOrder, setCompleteOrder] = useState([]);
+  const [completeOrder, setCompleteOrder] = useState({});
   const [currentTimestamp, setCurrentTimestamp] = useState('');
-  const [futureTimestamp, setFutureTimestamp] = useState('');
-
+  const [selectedDate, setSelectedDate] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
   // fetching json file with products list
@@ -34,37 +34,39 @@ export default function OrderForm() {
 
     // Check if all quantities are zero or not set
     const isEmptyOrder = products.every((product) => !order[product.id]);
-
     if (isEmptyOrder) {
       setErrorMessage('Your order is empty. Please add at least one item.');
       return;
     }
 
-    // setting the complete order
-    const newCompleteOrder = products.map((product) => ({
-      id: product.id,
-      name: product.name,
-      quantity: order[product.id] || 0,
-    }));
-    setCompleteOrder(newCompleteOrder);
-
     // setting current timestamp
     const currentDate = new Date();
-    const currentTimestamp = currentDate.toLocaleString();
+    const currentTimestamp = currentDate.toISOString().split('T')[0];
     setCurrentTimestamp(currentTimestamp);
 
-    // setting bake day
-    currentDate.setDate(currentDate.getDate() + 3);
-    const threeDaysFromNow = currentDate.toLocaleDateString();
-    setFutureTimestamp(threeDaysFromNow);
+    // setting the complete order
+    const CompleteOrder = {
+      deliverydate: selectedDate,
+      orderdate: currentTimestamp,
+      items: products.map((product) => ({
+        id: product.id,
+        name: product.name,
+        quantity: order[product.id] || 0,
+      })),
+    };
+    setCompleteOrder(CompleteOrder);
 
-    setShowConfirmation(true); // Show confirmation dialog
-    setErrorMessage(''); // Clear any previous error messages
+    // Show confirmation dialog
+    setShowConfirmation(true);
+
+    // Clear any previous error messages
+    setErrorMessage('');
   };
 
   // clear order form
   const handleClear = () => {
     setOrder({});
+    setSelectedDate('');
     setResetSignal(!resetSignal);
   };
 
@@ -75,15 +77,15 @@ export default function OrderForm() {
 
   // handle confirm order
   const handleConfirm = () => {
-    console.log('Order confirmed:', completeOrder, 'at', currentTimestamp);
+    console.log('Order confirmed:', completeOrder);
     setOrder({}); // clears order state
+    setSelectedDate(''); // reset selected date
     setResetSignal(!resetSignal); // toggles reset
     setShowConfirmation(false); // Close the confirmation dialog
   };
 
   return (
     <div>
-      {errorMessage && <div className="error-message">{errorMessage}</div>}
       <form onSubmit={handleSubmit}>
         <div className="order-form">
           {products.map((product) => {
@@ -97,6 +99,10 @@ export default function OrderForm() {
             );
           })}
         </div>
+        <DatePicker
+          selectedDate={selectedDate}
+          onDateChange={setSelectedDate}
+        />
         <div className="button-field">
           <ul>
             <li>
@@ -116,22 +122,22 @@ export default function OrderForm() {
           </ul>
         </div>
       </form>
-
+      {errorMessage && <div className="error-message">{errorMessage}</div>}
       {showConfirmation && (
         <div className="confirmation-dialog-overlay">
           <div className="confirmation-dialog">
             <h2>Confirm Order</h2>
             <p>Are you sure you want to submit this order?</p>
             <ul>
-              {completeOrder.map((item) => (
+              {completeOrder.items.map((item) => (
                 <li key={item.id}>
                   <span className="name">{item.name}:</span>
                   <span className="quantity">{item.quantity}</span>
                 </li>
               ))}
             </ul>
-            <p>Order Time: {currentTimestamp}</p>
-            <p>Bake Day: {futureTimestamp}</p>
+            <p>Order Date: {currentTimestamp}</p>
+            <p>Delivery Date: {selectedDate}</p>
             <button className="confirm-button" onClick={handleConfirm}>
               Yes, I'm sure.
             </button>
