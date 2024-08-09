@@ -42,18 +42,18 @@ export default function OrderForm() {
 
     // setting current timestamp
     const currentDate = new Date();
-    const currentTimestamp = currentDate.toISOString().split('T')[0];
+    const currentTimestamp = currentDate.toISOString().slice(0, 16);
     setCurrentTimestamp(currentTimestamp);
 
     // setting the complete order
     const CompleteOrder = {
-      deliverydate: selectedDate,
-      orderdate: currentTimestamp,
       items: products.map((product) => ({
         id: product.id,
         name: product.name,
         quantity: order[product.id] || 0,
       })),
+      deliveryDate: selectedDate,
+      orderTime: currentTimestamp,
     };
     setCompleteOrder(CompleteOrder);
 
@@ -89,13 +89,13 @@ export default function OrderForm() {
         body: JSON.stringify({
           token,
           items: completeOrder.items,
-          date: completeOrder.date,
-          orderTime: currentTimestamp,
+          deliveryDate: completeOrder.deliveryDate,
+          orderTime: completeOrder.orderTime,
         }),
       });
 
       if (response.ok) {
-        console.log('Order confirmed:', completeOrder, 'at', currentTimestamp);
+        console.log('Order confirmed:', completeOrder);
         setOrder({});
         setSelectedDate('');
         setResetSignal(!resetSignal);

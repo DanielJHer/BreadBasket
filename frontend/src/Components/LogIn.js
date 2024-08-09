@@ -17,9 +17,10 @@ export default function Login() {
   };
 
   return (
-    <form onSubmit={handleLogin}>
-      <h2>Login</h2>
+    <form className="login-form" onSubmit={handleLogin}>
+      <h2>Log In</h2>
       <input
+        className="login-input"
         type="email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
@@ -27,13 +28,16 @@ export default function Login() {
         required
       ></input>
       <input
+        className="login-input"
         type="password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         placeholder="Password"
         required
       ></input>
-      <button type="submit">Login</button>
+      <button className="login-button" type="submit">
+        Login
+      </button>
     </form>
   );
 }

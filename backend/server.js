@@ -5,9 +5,10 @@ const admin = require('firebase-admin');
 const cors = require('cors');
 const cron = require('node-cron');
 const nodemailer = require('nodemailer');
+const { MongoClient } = require('mongodb');
 
+// initialize firebase admin SDK
 const serviceAccount = require('./serviceAccountKey.json');
-
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
@@ -23,9 +24,14 @@ app.use(
 );
 
 // Connect to MongoDB
-const mongoURI = 'mongodb://localhost:27017/orderDB'; // Replace with your MongoDB URI if using MongoDB Atlas
-mongoose.connect(mongoURI);
+const mongoURI =
+  'mongodb+srv://danieljhher:DxQxxDENd3CjlqaB@cluster0.mlk8z.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
+mongoose
+  .connect(mongoURI)
+  .then(() => console.log('MongoDB connected successfully'))
+  .catch((err) => console.error('MongoDB connection error:', err));
 
+// order template
 const orderSchema = new mongoose.Schema({
   userId: String,
   items: [
@@ -35,41 +41,15 @@ const orderSchema = new mongoose.Schema({
       quantity: Number,
     },
   ],
-  date: String,
+  deliveryDate: String,
   orderTime: String,
 });
 
 const Order = mongoose.model('Order', orderSchema);
 
-// Nodemailer configuration
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: 'your-email@gmail.com',
-    pass: 'your-email-password',
-  },
-});
-
-// Function to send email
-const sendEmail = async (subject, text) => {
-  const mailOptions = {
-    from: 'your-email@gmail.com',
-    to: 'recipient-email@example.com',
-    subject,
-    text,
-  };
-
-  try {
-    await transporter.sendMail(mailOptions);
-    console.log('Email sent successfully');
-  } catch (error) {
-    console.error('Error sending email:', error);
-  }
-};
-
 // Endpoint to submit an order
 app.post('/submit-order', async (req, res) => {
-  const { token, items, date, orderTime } = req.body;
+  const { token, items, deliveryDate, orderTime } = req.body;
 
   try {
     const decodedToken = await admin.auth().verifyIdToken(token);
@@ -78,7 +58,7 @@ app.post('/submit-order', async (req, res) => {
     const newOrder = new Order({
       userId,
       items,
-      date,
+      deliveryDate,
       orderTime,
     });
 
@@ -87,6 +67,34 @@ app.post('/submit-order', async (req, res) => {
     res.status(200).send('Order saved successfully');
   } catch (error) {
     res.status(401).send('Unauthorized');
+  }
+});
+
+// Nodemailer configuration
+const nodemailer = require('nodemailer');
+require('dotenv').config();
+
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.REACT_APP_EMAIL_USER,
+    pass: process.env.REACT_APP_EMAIL_PASS,
+  },
+});
+
+// Function to send email
+const mailOptions = {
+  from: process.env.REACT_APP_EMAIL_USER,
+  to: 'danieljher@berkeley.edu',
+  subject: 'Test Email',
+  text: 'This is a test email.',
+};
+
+transporter.sendMail(mailOptions, function (error, info) {
+  if (error) {
+    console.log('Error occurred: ' + error.message);
+  } else {
+    console.log('Email sent: ' + info.response);
   }
 });
 
