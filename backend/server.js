@@ -1,3 +1,6 @@
+// loading environment variable
+require('dotenv').config({ path: '../.env' });
+
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
@@ -5,14 +8,14 @@ const admin = require('firebase-admin');
 const cors = require('cors');
 const cron = require('node-cron');
 const nodemailer = require('nodemailer');
-const { MongoClient } = require('mongodb');
 
-// initialize firebase admin SDK
+// Initialize Firebase Admin SDK
 const serviceAccount = require('./serviceAccountKey.json');
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
 
+// Parse JSON data of HTTP requests
 const app = express();
 app.use(bodyParser.json());
 
@@ -24,14 +27,13 @@ app.use(
 );
 
 // Connect to MongoDB
-const mongoURI =
-  'mongodb+srv://danieljhher:DxQxxDENd3CjlqaB@cluster0.mlk8z.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
+const mongoURI = process.env.MONGO_URI;
 mongoose
   .connect(mongoURI)
   .then(() => console.log('MongoDB connected successfully'))
   .catch((err) => console.error('MongoDB connection error:', err));
 
-// order template
+// Order template
 const orderSchema = new mongoose.Schema({
   userId: String,
   items: [
@@ -43,9 +45,27 @@ const orderSchema = new mongoose.Schema({
   ],
   deliveryDate: String,
   orderTime: String,
+  orderNumber: { type: Number, unique: true },
 });
 
 const Order = mongoose.model('Order', orderSchema);
+
+// Order counter
+const counterSchema = new mongoose.Schema({
+  name: String,
+  value: Number,
+});
+
+const Counter = mongoose.model('Counter', counterSchema);
+
+// Nodemailer configuration
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
 
 // Endpoint to submit an order
 app.post('/submit-order', async (req, res) => {
@@ -55,89 +75,58 @@ app.post('/submit-order', async (req, res) => {
     const decodedToken = await admin.auth().verifyIdToken(token);
     const userId = decodedToken.uid;
 
+    // Get the current order number and increment it
+    const counter = await Counter.findOneAndUpdate(
+      { name: 'orderNumber' },
+      { $inc: { value: 1 } },
+      { new: true, upsert: true }
+    );
+
+    const newOrderNumber = counter.value;
+
+    // Create new order
     const newOrder = new Order({
       userId,
       items,
       deliveryDate,
       orderTime,
+      orderNumber: newOrderNumber,
     });
 
+    // Save order
     await newOrder.save();
 
-    res.status(200).send('Order saved successfully');
-  } catch (error) {
-    res.status(401).send('Unauthorized');
-  }
-});
-
-// Nodemailer configuration
-const nodemailer = require('nodemailer');
-require('dotenv').config();
-
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.REACT_APP_EMAIL_USER,
-    pass: process.env.REACT_APP_EMAIL_PASS,
-  },
-});
-
-// Function to send email
-const mailOptions = {
-  from: process.env.REACT_APP_EMAIL_USER,
-  to: 'danieljher@berkeley.edu',
-  subject: 'Test Email',
-  text: 'This is a test email.',
-};
-
-transporter.sendMail(mailOptions, function (error, info) {
-  if (error) {
-    console.log('Error occurred: ' + error.message);
-  } else {
-    console.log('Email sent: ' + info.response);
-  }
-});
-
-// Scheduled task to run at 12am daily
-cron.schedule('0 0 * * *', async () => {
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  const formattedDate = tomorrow.toISOString().split('T')[0]; // YYYY-MM-DD format
-
-  try {
-    const orders = await Order.find({ date: formattedDate });
-
-    const aggregatedQuantities = orders.reduce((acc, order) => {
-      order.items.forEach((item) => {
-        if (!acc[item.id]) {
-          acc[item.id] = {
-            name: item.name,
-            quantity: 0,
-          };
-        }
-        acc[item.id].quantity += item.quantity;
-      });
-      return acc;
-    }, {});
-
-    const emailText = Object.values(aggregatedQuantities)
+    // Send confirmation email to the user
+    const userEmail = decodedToken.email;
+    const orderSummary = items
       .map((item) => `${item.name}: ${item.quantity}`)
       .join('\n');
+    const emailText = `Thank you for your order! Your order number is ${newOrderNumber}.\n\nOrder Summary:\n${orderSummary}\n\nDelivery Date: ${deliveryDate}\nOrder Time: ${orderTime}`;
 
-    await sendEmail(
-      `Aggregated Quantities for Orders Due on ${formattedDate}`,
-      `Here are the aggregated quantities for orders due tomorrow:\n\n${emailText}`
-    );
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: userEmail,
+      subject: 'Order Confirmation',
+      text: emailText,
+    };
 
-    console.log(
-      'Aggregated quantities for orders due tomorrow:',
-      aggregatedQuantities
-    );
+    transporter.sendMail(mailOptions, function (error, info) {
+      if (error) {
+        console.error('Error sending confirmation email:', error.message);
+      } else {
+        console.log('Confirmation email sent:', info.response);
+      }
+    });
+
+    // Return the order number to the frontend as JSON
+    res.status(200).json({ orderNumber: newOrderNumber });
   } catch (error) {
-    console.error('Error fetching orders for tomorrow:', error);
+    console.error('Error submitting order:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 
+// Start the server
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

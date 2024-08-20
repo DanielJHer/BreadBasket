@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import ProductCard from './ProductCard';
 import DatePicker from './DatePicker';
+import OrderSuccess from './OrderSuccess'; // Import the success component
 import { auth } from '../firebase';
 
 export default function OrderForm() {
@@ -9,10 +10,12 @@ export default function OrderForm() {
   const [order, setOrder] = useState({});
   const [resetSignal, setResetSignal] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false); // State for showing success message
   const [completeOrder, setCompleteOrder] = useState({});
   const [currentTimestamp, setCurrentTimestamp] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [orderNumber, setOrderNumber] = useState(null); // State for order number
 
   // fetching json file with products list
   useEffect(() => {
@@ -95,11 +98,13 @@ export default function OrderForm() {
       });
 
       if (response.ok) {
-        console.log('Order confirmed:', completeOrder);
+        const data = await response.json();
+        setOrderNumber(data.orderNumber); // Set the order number from the response
         setOrder({});
         setSelectedDate('');
         setResetSignal(!resetSignal);
         setShowConfirmation(false);
+        setShowSuccess(true); // Show the success message
       } else {
         console.error('Error confirming order:', response.statusText);
       }
@@ -107,6 +112,10 @@ export default function OrderForm() {
       console.error('Error confirming order:', error);
     }
   };
+
+  if (showSuccess) {
+    return <OrderSuccess orderNumber={orderNumber} />;
+  }
 
   return (
     <div>

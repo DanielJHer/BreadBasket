@@ -21,6 +21,7 @@ body {
   background-color: #2c2c2c;
   padding: 1.5rem;
   text-align: center;
+  font-size: 1.5rem;
 }
 
 .order-form {
@@ -255,4 +256,14 @@ nav a:hover,
   color: white;
   border: none;
   cursor: pointer;
+}
+
+.order-success-form {
+  font-size: 1.2rem;
+  color: black;
+  padding: 3rem;
+}
+
+.order-success-p {
+  margin-top: 1rem;
 }
