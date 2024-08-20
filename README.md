@@ -1,3 +1,18 @@
 # Breadbasket
 
-Breadbasket is a full-stack application built to provide a custom business solutions that that allows vendors to log in, place orders, and manage those orders. This application uses React for the frontend, Node.js/Express for the backend, and MongoDB for data storage. Firebase Authentication is used for user authentication.
+## Overview
+
+Breadbasket is a full-stack application built to provide a custom business solution that uses React for the frontend, Node.js/Express for the backend, MongoDB as a database, and Firebase for user authentication. The frontend provides an intuitive interface for vendors to log in and place their orders. The backend automates order processing by quering the database, generates Excel reports, and emails them to the relevant recipients.
+
+## Features
+
+- Automated Order Processing: Orders with a delivery date three days from now are automatically gathered at midnight, and an Excel spreadsheet summarizing the orders is generated.
+- Excel Report Generation: The system generates an Excel report with vendors as rows and bread types as columns, summarizing the quantities ordered for the bakery.
+- Email Notifications: The generated Excel report is emailed to designated recipients automatically upon order confirmation.
+- Intuitive Frontend: Vendors can log in via email and easily place orders with the bakery.
+
+## Screenshots
+
+![Homepage Screenshot](assets/screenshots/frontend1.png)
+![Homepage Screenshot1](assets/screenshots/frontend2.png)
+![Database Screenshot](assets/screenshots/database.png)
