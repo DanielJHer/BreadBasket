@@ -8,6 +8,8 @@ const admin = require('firebase-admin');
 const cors = require('cors');
 const cron = require('node-cron');
 const nodemailer = require('nodemailer');
+const XLSX = require('xlsx');
+const path = require('path');
 
 // Initialize Firebase Admin SDK
 const serviceAccount = require('./serviceAccountKey.json');
@@ -126,8 +128,144 @@ app.post('/submit-order', async (req, res) => {
   }
 });
 
+// Querying the database for excel order
+async function getOrdersForDate(targetDate) {
+  try {
+    // Convert targetDate to a string in the format 'YYYY-MM-DD'
+    const formattedDate = targetDate.toISOString().split('T')[0];
+
+    // Find orders in database
+    const orders = await Order.find({
+      deliveryDate: formattedDate,
+    });
+
+    return orders;
+  } catch (error) {
+    console.error('Error fetching orders:', error);
+    return [];
+  }
+}
+
+// Function to generate excel spreadsheet
+function generateExcel(orders) {
+  const data = [];
+
+  // Define headers based on the bread types
+  const headers = [
+    'Vendor',
+    'COUNTRY',
+    'POLENTA',
+    'BLACK SES',
+    'GOCH',
+    'CIA (SM)',
+    'CIA (L)',
+    'FOUG',
+    'FOC',
+    'BAG',
+    'BAG (SES)',
+    'MILKBREAD',
+    'BUNS',
+  ];
+
+  // Push headers to the first row
+  data.push(headers);
+
+  // Populate rows
+  orders.forEach((order) => {
+    const row = [order.vendor]; // Assuming each order has a vendor field
+
+    // Add quantities for each bread type
+    headers.slice(1).forEach((breadType) => {
+      const item = order.items.find((i) => i.name === breadType);
+      row.push(item ? item.quantity : 0); // Push the quantity or 0 if not found
+    });
+
+    data.push(row);
+  });
+
+  // Create a new workbook and add the data
+  const worksheet = XLSX.utils.aoa_to_sheet(data);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Orders');
+
+  // Write to file
+  const filePath = path.join(__dirname, 'Bread_Orders.xlsx');
+  XLSX.writeFile(workbook, filePath);
+
+  return filePath;
+}
+
+// Sending automated email with excel
+async function sendEmail(filePath) {
+  console.log('Attempting to send email...');
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
+
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: 'danieljher@berkeley.edu',
+    subject: 'Daily Bread Orders',
+    text: 'Please find attached the daily bread orders.',
+    attachments: [{ filename: 'Bread_Orders.xlsx', path: filePath }],
+  };
+
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      console.error('Error sending email:', error);
+    } else {
+      console.log('Email sent:', info.response);
+    }
+  });
+}
+
+// Creating the automated task
+cron.schedule('0 0 * * *', async () => {
+  console.log('Cron job ran at midnight');
+  const targetDate = new Date();
+  targetDate.setDate(targetDate.getDate() + 2);
+
+  const orders = await getOrdersForDate(targetDate);
+  if (orders.length > 0) {
+    const filePath = generateExcel(orders);
+    sendEmail(filePath);
+  } else {
+    console.log('No orders found for the target date.');
+  }
+});
+
 // Start the server
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+
+async function manualEmailSending() {
+  try {
+    console.log('Starting manual email sending process...');
+
+    // Calculate the target date (two days from now)
+    const targetDate = new Date();
+    targetDate.setDate(targetDate.getDate() + 2);
+
+    // Fetch the orders for that date
+    const orders = await getOrdersForDate(targetDate);
+    if (orders.length > 0) {
+      const filePath = generateExcel(orders);
+      console.log('Generated Excel file at:', filePath);
+      await sendEmail(filePath);
+    } else {
+      console.log('No orders found for the target date.');
+    }
+
+    console.log('Manual email sending process completed.');
+  } catch (error) {
+    console.error('Error during manual email sending process:', error);
+  }
+}
+
+manualEmailSending();

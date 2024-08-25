@@ -15,6 +15,7 @@ export default function OrderForm() {
   const [currentTimestamp, setCurrentTimestamp] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [showErrorOverlay, setShowErrorOverlay] = useState(false);
   const [orderNumber, setOrderNumber] = useState(null); // State for order number
 
   // fetching json file with products list
@@ -32,7 +33,7 @@ export default function OrderForm() {
     }));
   };
 
-  // handle submission by rendering confirmation box
+  // Handle submission by rendering confirmation box
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -40,12 +41,20 @@ export default function OrderForm() {
     const isEmptyOrder = products.every((product) => !order[product.id]);
     if (isEmptyOrder) {
       setErrorMessage('Your order is empty. Please add at least one item.');
+      setShowErrorOverlay(true); // Show the error overlay
       return;
     }
 
+    // Clear any previous error messages
+    setErrorMessage('');
+    setShowErrorOverlay(false); // Hide the error overlay if no error
+
     // setting current timestamp
     const currentDate = new Date();
-    const currentTimestamp = currentDate.toISOString().slice(0, 16);
+    const localTime = new Date(
+      currentDate.getTime() - currentDate.getTimezoneOffset() * 60000
+    );
+    const currentTimestamp = localTime.toISOString().slice(0, 16);
     setCurrentTimestamp(currentTimestamp);
 
     // setting the complete order
@@ -155,7 +164,21 @@ export default function OrderForm() {
           </ul>
         </div>
       </form>
-      {errorMessage && <div className="error-message">{errorMessage}</div>}
+
+      {showErrorOverlay && (
+        <div className="confirmation-dialog-overlay">
+          <div className="confirmation-dialog">
+            <h2>Error</h2>
+            <p>{errorMessage}</p>
+            <button
+              className="confirm-button"
+              onClick={() => setShowErrorOverlay(false)}
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
       {showConfirmation && (
         <div className="confirmation-dialog-overlay">
           <div className="confirmation-dialog">
@@ -169,7 +192,7 @@ export default function OrderForm() {
                 </li>
               ))}
             </ul>
-            <p>Order Date: {currentTimestamp}</p>
+            <p>Order Date and Time: {currentTimestamp}</p>
             <p>Delivery Date: {selectedDate}</p>
             <button className="confirm-button" onClick={handleConfirm}>
               Yes, I'm sure.
