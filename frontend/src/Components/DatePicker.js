@@ -1,10 +1,11 @@
 import React from 'react';
+import moment from 'moment-timezone';
 
 export default function DatePicker({ selectedDate, onDateChange }) {
-  // minimum 3 days from now delivery
-  const currentDate = new Date();
-  currentDate.setDate(currentDate.getDate() + 3);
-  const minDate = currentDate.toISOString().split('T')[0];
+  // Get the current date in PST and add 3 days
+  const currentDate = moment().tz('America/Los_Angeles'); // PST timezone
+  currentDate.add(3, 'days');
+  const minDate = currentDate.format('YYYY-MM-DD'); // Format to 'YYYY-MM-DD' for the date picker
 
   return (
     <div className="date-picker">

@@ -16,3 +16,4 @@ Breadbasket is a full-stack application built to provide a custom business solut
 ![Homepage Screenshot](assets/frontend1.png)
 ![Homepage Screenshot1](assets/frontend2.png)
 ![Database Screenshot](assets/database.png)
+![Email Screenshot](assets/email.png)

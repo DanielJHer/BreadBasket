@@ -10,6 +10,7 @@ const cron = require('node-cron');
 const nodemailer = require('nodemailer');
 const XLSX = require('xlsx');
 const path = require('path');
+const moment = require('moment-timezone');
 
 // Initialize Firebase Admin SDK
 const serviceAccount = require('./serviceAccountKey.json');
@@ -132,7 +133,7 @@ app.post('/submit-order', async (req, res) => {
 async function getOrdersForDate(targetDate) {
   try {
     // Convert targetDate to a string in the format 'YYYY-MM-DD'
-    const formattedDate = targetDate.toISOString().split('T')[0];
+    const formattedDate = targetDate.format('YYYY-MM-DD');
 
     // Find orders in database
     const orders = await Order.find({
@@ -167,16 +168,32 @@ function generateExcel(orders) {
     'BUNS',
   ];
 
+  // ID mapping to use ID field instead of name
+  const idMapping = {
+    GOCH: '1',
+    FOC: '2',
+    'BLACK SES': '3',
+    COUNTRY: '4',
+    POLENTA: '5',
+    BAG: '6',
+    'CIA (L)': '7',
+    FOUG: '8',
+  };
+
   // Push headers to the first row
   data.push(headers);
 
   // Populate rows
   orders.forEach((order) => {
-    const row = [order.vendor]; // Assuming each order has a vendor field
+    const row = [order.vendor]; // Assuming there's a vendor field in each order
 
-    // Add quantities for each bread type
     headers.slice(1).forEach((breadType) => {
-      const item = order.items.find((i) => i.name === breadType);
+      const item = order.items.find((i) => i.id === idMapping[breadType]);
+      if (item) {
+        console.log(`Found item: ${item.name} with quantity: ${item.quantity}`);
+      } else {
+        console.log(`Item not found for bread type: ${breadType}`);
+      }
       row.push(item ? item.quantity : 0); // Push the quantity or 0 if not found
     });
 
@@ -226,8 +243,7 @@ async function sendEmail(filePath) {
 // Creating the automated task
 cron.schedule('0 0 * * *', async () => {
   console.log('Cron job ran at midnight');
-  const targetDate = new Date();
-  targetDate.setDate(targetDate.getDate() + 2);
+  const targetDate = moment().tz('America/Los_Angeles').add(3, 'days');
 
   const orders = await getOrdersForDate(targetDate);
   if (orders.length > 0) {
@@ -243,29 +259,3 @@ const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
-
-async function manualEmailSending() {
-  try {
-    console.log('Starting manual email sending process...');
-
-    // Calculate the target date (two days from now)
-    const targetDate = new Date();
-    targetDate.setDate(targetDate.getDate() + 2);
-
-    // Fetch the orders for that date
-    const orders = await getOrdersForDate(targetDate);
-    if (orders.length > 0) {
-      const filePath = generateExcel(orders);
-      console.log('Generated Excel file at:', filePath);
-      await sendEmail(filePath);
-    } else {
-      console.log('No orders found for the target date.');
-    }
-
-    console.log('Manual email sending process completed.');
-  } catch (error) {
-    console.error('Error during manual email sending process:', error);
-  }
-}
-
-manualEmailSending();
