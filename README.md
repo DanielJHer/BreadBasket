@@ -6,10 +6,10 @@ Breadbasket is a full-stack application built to provide a custom business solut
 
 ## Features
 
-- Automated Order Processing: Orders with a delivery date three days from now are automatically gathered at midnight, and an Excel spreadsheet summarizing the orders is generated.
+- Automated Order Processing: Orders with a delivery date three days from now are automatically gathered at midnight by querying the database and generating an excel spreadsheet.
 - Excel Report Generation: The system generates an Excel report with vendors as rows and bread types as columns, summarizing the quantities ordered for the bakery.
-- Email Notifications: The generated Excel report is emailed to designated recipients automatically upon order confirmation.
-- Intuitive Frontend: Vendors can log in via email and easily place orders with the bakery.
+- Email Notifications: The generated Excel report is emailed to the business owner automatically at midnight in order to prepare for the bake the following data while the vendors who placed the orders are automatically sent an email of their confirmation order.
+- Intuitive Frontend: Vendors can log in via email and seamlessly place orders with the bakery.
 
 ## Screenshots
 
