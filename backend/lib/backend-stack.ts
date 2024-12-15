@@ -3,18 +3,25 @@ import { Construct } from 'constructs';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as apigateway from 'aws-cdk-lib/aws-apigateway';
+import * as path from 'path';
+
+console.log(
+  'Resolved Lambda Path:',
+  path.resolve(__dirname, '../lambda/submitOrder')
+);
 
 export class BackendStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
     // DynamoDB Table
-    const ordersTable = new cdk.aws_dynamodb.Table(this, 'BackendTable', {
+    const ordersTable = new dynamodb.Table(this, 'BackendTable', {
       partitionKey: {
         name: 'OrderID',
         type: cdk.aws_dynamodb.AttributeType.STRING,
       },
       billingMode: cdk.aws_dynamodb.BillingMode.PAY_PER_REQUEST,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
 
     // Lambda Function
@@ -23,8 +30,8 @@ export class BackendStack extends cdk.Stack {
       'BackendLambda',
       {
         runtime: cdk.aws_lambda.Runtime.PYTHON_3_10,
-        handler: 'submitOrder.handler',
-        code: cdk.aws_lambda.Code.fromAsset('../lambda/submitOrder/'),
+        handler: 'app.handler',
+        code: lambda.Code.fromAsset('lambda/submitOrder'),
         environment: {
           TABLE_NAME: ordersTable.tableName,
         },
@@ -35,7 +42,7 @@ export class BackendStack extends cdk.Stack {
     ordersTable.grantReadWriteData(submitOrderFunction);
 
     // API Gateway
-    const apiGateway = new cdk.aws_apigateway.RestApi(this, 'BackendApi', {
+    const apiGateway = new apigateway.RestApi(this, 'BackendApi', {
       restApiName: 'Backend API',
     });
 

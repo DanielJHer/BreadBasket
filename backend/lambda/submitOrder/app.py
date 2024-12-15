@@ -1,20 +1,22 @@
 import boto3
 import json
 import os
-import datetime from datetime
+from datetime import datetime
 
 # Initialize dynamodb resource
 dynamodb = boto3.resource('dynamodb')
-tableName = os.environ.get('TABLE_NAME')
-table = dynamodb.Table(tableName)
+table_name = os.environ.get('TABLE_NAME') 
+if not table_name:
+    raise ValueError("Environment variable 'TABLE_NAME' is not set.")
+table = dynamodb.Table(table_name)
 
 # Lambda function handler
 def handler(event, context):
     try:
         # Parse the request body
         request_body = json.loads(event['body'])
-        customer_name = body.get('customer_Name')
-        items = body.get('items')
+        customer_name = request_body.get('customer_name')
+        items = request_body.get('items')
 
         if not customer_name or not items:
             return {
@@ -24,12 +26,12 @@ def handler(event, context):
         
         # Generate a unique order ID
         order_id = f"order_{int(datetime.now().timestamp())}"
-        timestamp = datetime.utnow().isoformat()
+        timestamp = datetime.utcnow().isoformat()
 
         # Put order details in DynamoDB
         table.put_item(
             Item={
-                'Order_ID': order_id,
+                'OrderID': order_id,
                 'CustomerName': customer_name,
                 'Items': items,
                 'Status': 'Pending',
@@ -43,7 +45,7 @@ def handler(event, context):
         }
 
     # Exception handling
-    except as Exception as e:
+    except Exception as e:
         return {
             'statusCode': 500,
             'body': json.dumps({'error': str(e)})
