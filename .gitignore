@@ -14,9 +14,6 @@
 # env
 .env
 
-# account key
-serviceAccountKey.json
-
 # misc
 .DS_Store
 .env.local

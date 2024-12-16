@@ -3,9 +3,10 @@ import ProductCard from './ProductCard';
 import DatePicker from './DatePicker';
 import OrderSuccess from './OrderSuccess'; // Import the success component
 import { auth } from '../firebase';
+import API_BASE_URL from '../api/apiConfig';
 
 export default function OrderForm() {
-  // use state
+  // use states
   const [products, setProducts] = useState([]);
   const [order, setOrder] = useState({});
   const [resetSignal, setResetSignal] = useState(false);
@@ -18,7 +19,7 @@ export default function OrderForm() {
   const [showErrorOverlay, setShowErrorOverlay] = useState(false);
   const [orderNumber, setOrderNumber] = useState(null); // State for order number
 
-  // fetching json file with products list
+  // fetching json file saved in public directory with products list
   useEffect(() => {
     fetch('products.json').then((response) =>
       response.json().then((data) => setProducts(data))
@@ -93,7 +94,7 @@ export default function OrderForm() {
     try {
       const token = await auth.currentUser.getIdToken();
 
-      const response = await fetch('http://localhost:5001/submit-order', {
+      const response = await fetch(`${API_BASE_URL}/orders`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
