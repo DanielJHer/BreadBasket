@@ -3,10 +3,23 @@ import { Construct } from 'constructs';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as apigateway from 'aws-cdk-lib/aws-apigateway';
+import * as s3 from 'aws-cdk-lib/aws-s3';
+import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
 
 export class BackendStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
+
+    // S3 Bucket for React App
+    const siteBucket = new s3.Bucket(this, 'ReactAppBucket', {
+      websiteIndexDocument: 'index.html',
+      publicReadAccess: true,
+    });
+
+    // CloudFront Distribution
+    new cloudfront.Distribution(this, 'SiteDistribution', {
+      defaultBehavior: { origin: new origins.S3Origin(siteBucket) },
+    });
 
     // DynamoDB Table
     const ordersTable = new dynamodb.Table(this, 'BackendTable', {
