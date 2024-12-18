@@ -36,6 +36,7 @@ def handler(event, context):
                 'Items': items,
                 'Status': 'Pending',
                 'Timestamp': timestamp,
+                'DeliveryDate': delivery_date
             })
         
         # Return success response

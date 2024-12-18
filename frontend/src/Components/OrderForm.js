@@ -100,10 +100,10 @@ export default function OrderForm() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          token,
+          customer_name: token,
           items: completeOrder.items,
-          deliveryDate: completeOrder.deliveryDate,
-          orderTime: completeOrder.orderTime,
+          delivery_date: completeOrder.deliveryDate,
+          timestamp: completeOrder.orderTime,
         }),
       });
 
