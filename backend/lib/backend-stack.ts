@@ -56,22 +56,16 @@ export class BackendStack extends cdk.Stack {
 
     const ordersResource = apiGateway.root.addResource('orders');
 
-    ordersResource.addCorsPreflight({
-      allowOrigins: ['*'],
-      allowMethods: ['POST', 'OPTIONS'],
-      allowHeaders: [
-        'Content-Type',
-        'X-Amz-Date',
-        'Authorization',
-        'X-Api-Key',
-        'X-Amz-Security-Token',
-      ],
-    });
-
     ordersResource.addMethod(
       'POST',
       new cdk.aws_apigateway.LambdaIntegration(submitOrderFunction)
     );
+
+    ordersResource.addCorsPreflight({
+      allowOrigins: ['http://localhost:3000'],
+      allowMethods: ['OPTIONS', 'POST'],
+      allowHeaders: ['Content-Type', 'Authorization'],
+    });
 
     // Output API Gateway URL
     new cdk.CfnOutput(this, 'BackendApiUrl', {
