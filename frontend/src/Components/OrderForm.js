@@ -92,7 +92,9 @@ export default function OrderForm() {
   // handle confirm order
   const handleConfirm = async () => {
     try {
-      const token = await auth.currentUser.getIdToken();
+      // Get the customer's name from the authenticated user
+      const customerName =
+        (await auth.currentUser.getIdToken()) || 'Unknown Customer';
 
       const response = await fetch(`${API_BASE_URL}/orders`, {
         method: 'POST',
@@ -100,7 +102,7 @@ export default function OrderForm() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          customer_name: token,
+          customer_name: customerName,
           items: completeOrder.items,
           delivery_date: completeOrder.deliveryDate,
           timestamp: completeOrder.orderTime,
