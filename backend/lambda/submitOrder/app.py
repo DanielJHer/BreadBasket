@@ -17,6 +17,8 @@ def handler(event, context):
         request_body = json.loads(event['body'])
         customer_name = request_body.get('customer_name')
         items = request_body.get('items')
+        timestamp = request_body.get('timestamp')
+        delivery_date = request_body.get('delivery_date')
 
         if not customer_name or not items:
             return {
@@ -26,7 +28,6 @@ def handler(event, context):
         
         # Generate a unique order ID
         order_id = f"order_{int(datetime.now().timestamp())}"
-        timestamp = datetime.utcnow().isoformat()
 
         # Put order details in DynamoDB
         table.put_item(
@@ -42,7 +43,8 @@ def handler(event, context):
         # Return success response
         return {
             'statusCode': 200,
-            'body': json.dumps({'message': 'Order submitted successfully'})
+            'body': json.dumps({'message': 'Order submitted successfully',
+            'orderNumber': order_id})
         }
 
     # Exception handling

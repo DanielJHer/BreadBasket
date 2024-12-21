@@ -11,16 +11,16 @@ export class BackendStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    // S3 Bucket for React App
-    const siteBucket = new s3.Bucket(this, 'ReactAppBucket', {
-      websiteIndexDocument: 'index.html',
-      publicReadAccess: true,
-    });
+    // // S3 Bucket for React App
+    // const siteBucket = new s3.Bucket(this, 'ReactAppBucket', {
+    //   websiteIndexDocument: 'index.html',
+    //   publicReadAccess: true,
+    // });
 
-    // CloudFront Distribution
-    new cloudfront.Distribution(this, 'SiteDistribution', {
-      defaultBehavior: { origin: new origins.S3Origin(siteBucket) },
-    });
+    // // CloudFront Distribution
+    // new cloudfront.Distribution(this, 'SiteDistribution', {
+    //   defaultBehavior: { origin: new origins.S3Origin(siteBucket) },
+    // });
 
     // DynamoDB Table
     const ordersTable = new dynamodb.Table(this, 'BackendTable', {
@@ -55,6 +55,19 @@ export class BackendStack extends cdk.Stack {
     });
 
     const ordersResource = apiGateway.root.addResource('orders');
+
+    ordersResource.addCorsPreflight({
+      allowOrigins: ['*'],
+      allowMethods: ['POST', 'OPTIONS'],
+      allowHeaders: [
+        'Content-Type',
+        'X-Amz-Date',
+        'Authorization',
+        'X-Api-Key',
+        'X-Amz-Security-Token',
+      ],
+    });
+
     ordersResource.addMethod(
       'POST',
       new cdk.aws_apigateway.LambdaIntegration(submitOrderFunction)
